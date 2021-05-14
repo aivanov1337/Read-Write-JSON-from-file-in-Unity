@@ -3,23 +3,70 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CharacterLoader : MonoBehaviour
 {
-    private string path;
+    public Text textbox;
+
+    [Header("Character Loader")]
+
+    public string file = "characters.json";    
+
+    public string path;
+
+
     public List<Character> charDb = new List<Character>();
-    private string file = "characters.json";
+
+    [Header("Character Builder")]
+    public CharacterBuilder characterBuilder;
+
+
+    public void Awake()
+    {
+        TextAsset characters = Resources.Load<TextAsset>("characters");
+        Debug.Log(characters);
+
+        path = Application.persistentDataPath + "/" + file;
+
+        textbox.text = path;
+        //foreach(Character n in charDb)
+        //{
+        //    Debug.Log(n.Agility);
+        //}
+        //Debug.Log(JsonUtility.ToJson(this));
+        //Save();
+
+        Load();
+
+        var newChar = new Character() { Strength = 15, items = { "iron_helmet1", "iron_chest1" } };
+        charDb.Add(newChar);
+        Save();
+
+        //SpawnCharacter(charDb[1]);
+        //SpawnItem(charDb[1]);
+        characterBuilder.SpawnCharacter(charDb[0]);
+    }
 
     public void Start()
-    {    
-        path = Application.dataPath + "/" + file;        
-        Load();
+    {
+        //textbox.text = file + " |||| " + path + "||||" + charDb[1].Strength +"||||" + Application.dataPath.ToString();
     }
 
     private void Load()
-    {        
-        string json = ReadFromFile(path);
-        JsonUtility.FromJsonOverwrite(json,this);
+    {
+        try
+        {
+            string json = ReadFromFile(path);
+            JsonUtility.FromJsonOverwrite(json, this);
+        }
+
+        catch(IOException)
+        {
+            File.Create(path);
+            Load();
+        }
+
     }
 
     private void Save()
@@ -46,5 +93,4 @@ public class CharacterLoader : MonoBehaviour
             return json;
         }
     }
-
 }
